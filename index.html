@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRINTIGO SERVER</title>
+    <style>
+        /* Global Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+            transition: all 0.5s ease;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: white;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        
+        /* Loading Page Styles */
+        #loading-page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            z-index: 100;
+        }
+        
+        .loading-text {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            background: linear-gradient(90deg, #ff8a00, #e52e71, #00b4db);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: textGlow 2s infinite alternate;
+        }
+        
+        @keyframes textGlow {
+            0% { text-shadow: 0 0 5px rgba(255, 138, 0, 0.5); }
+            50% { text-shadow: 0 0 20px rgba(229, 46, 113, 0.7); }
+            100% { text-shadow: 0 0 35px rgba(0, 180, 219, 0.9); }
+        }
+        
+        .loader {
+            width: 150px;
+            height: 150px;
+            position: relative;
+        }
+        
+        .loader-circle {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 5px solid transparent;
+            border-radius: 50%;
+            animation: rotate 3s linear infinite;
+            border-top-color: #ff8a00;
+            box-shadow: 0 0 15px #ff8a00;
+        }
+        
+        .loader-circle:nth-child(2) {
+            width: 80%;
+            height: 80%;
+            top: 10%;
+            left: 10%;
+            animation: rotate 2s linear infinite reverse;
+            border-top-color: #e52e71;
+            box-shadow: 0 0 15px #e52e71;
+        }
+        
+        .loader-circle:nth-child(3) {
+            width: 60%;
+            height: 60%;
+            top: 20%;
+            left: 20%;
+            animation: rotate 1.5s linear infinite;
+            border-top-color: #00b4db;
+            box-shadow: 0 0 15px #00b4db;
+        }
+        
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Privacy Policy Styles */
+        #privacy-page {
+            display: none;
+            width: 80%;
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transform: scale(0.9);
+            opacity: 0;
+            animation: fadeInScale 0.5s forwards 0.5s;
+        }
+        
+        @keyframes fadeInScale {
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .privacy-content {
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .privacy-content h2 {
+            color: #ff8a00;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+        .privacy-content p {
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+        
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .checkbox-container input {
+            margin-right: 10px;
+            width: 20px;
+            height: 20px;
+        }
+        
+        .continue-btn {
+            background: linear-gradient(90deg, #ff8a00, #e52e71);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(229, 46, 113, 0.4);
+            display: block;
+            margin: 0 auto;
+        }
+        
+        .continue-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(229, 46, 113, 0.6);
+        }
+        
+        .continue-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        /* Login Page Styles */
+        #login-page {
+            display: none;
+            width: 90%;
+            max-width: 400px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transform: scale(0.9);
+            opacity: 0;
+        }
+        
+        .login-title {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #00b4db;
+            font-size: 1.8rem;
+            background: linear-gradient(90deg, #00b4db, #e52e71);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .input-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #ff8a00;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            color: white;
+            font-size: 1rem;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #e52e71;
+            box-shadow: 0 0 10px rgba(229, 46, 113, 0.5);
+        }
+        
+        .login-btn {
+            background: linear-gradient(90deg, #00b4db, #e52e71);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 180, 219, 0.4);
+            width: 100%;
+            margin-top: 1rem;
+        }
+        
+        .login-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 180, 219, 0.6);
+        }
+        
+        .error-message {
+            color: #ff4d4d;
+            text-align: center;
+            margin-top: 1rem;
+            height: 20px;
+        }
+        
+        /* Verification Page Styles */
+        #verification-page {
+            display: none;
+            width: 90%;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transform: scale(0.9);
+            opacity: 0;
+        }
+        
+        .verification-title {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #e52e71;
+            font-size: 1.8rem;
+        }
+        
+        .verification-subtitle {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #aaa;
+        }
+        
+        .verification-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .verification-items {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .verification-item {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 2rem;
+        }
+        
+        .verification-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+        
+        .verification-item.selected {
+            background: #e52e71;
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(229, 46, 113, 0.7);
+        }
+        
+        .verify-btn {
+            background: linear-gradient(90deg, #e52e71, #ff8a00);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(229, 46, 113, 0.4);
+            display: block;
+            margin: 0 auto;
+        }
+        
+        .verify-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(229, 46, 113, 0.6);
+        }
+        
+        .verify-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        /* Final Page Styles */
+        #final-page {
+            display: none;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        .particle {
+            position: absolute;
+            background: linear-gradient(90deg, #ff8a00, #e52e71, #00b4db);
+            border-radius: 50%;
+            filter: blur(5px);
+            animation: float 15s infinite linear;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-1000px) rotate(720deg); opacity: 0; }
+        }
+        
+        .final-content {
+            position: relative;
+            z-index: 2;
+            width: 90%;
+            max-width: 800px;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 3rem;
+            text-align: center;
+            margin: 2rem auto;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            transform: perspective(1000px) rotateX(10deg);
+            animation: contentFloat 6s infinite ease-in-out;
+        }
+        
+        @keyframes contentFloat {
+            0%, 100% { transform: perspective(1000px) rotateX(10deg) translateY(0); }
+            50% { transform: perspective(1000px) rotateX(10deg) translateY(-20px); }
+        }
+        
+        .final-title {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(90deg, #ff8a00, #e52e71, #00b4db);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            animation: titleGlow 3s infinite alternate;
+        }
+        
+        @keyframes titleGlow {
+            0% { text-shadow: 0 0 10px rgba(255, 138, 0, 0.5); }
+            33% { text-shadow: 0 0 20px rgba(229, 46, 113, 0.7); }
+            66% { text-shadow: 0 0 20px rgba(0, 180, 219, 0.7); }
+            100% { text-shadow: 0 0 30px rgba(255, 138, 0, 0.9); }
+        }
+        
+        .final-text {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .final-link {
+            display: inline-block;
+            background: linear-gradient(90deg, #00b4db, #e52e71);
+            color: white;
+            text-decoration: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 10px 20px rgba(0, 180, 219, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .final-link:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 180, 219, 0.7);
+        }
+        
+        .final-link::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right,
+                transparent,
+                transparent,
+                transparent,
+                rgba(255, 255, 255, 0.3),
+                transparent,
+                transparent,
+                transparent
+            );
+            transform: rotate(30deg);
+            animation: shine 3s infinite;
+        }
+        
+        @keyframes shine {
+            0% { transform: translateX(-100%) rotate(30deg); }
+            100% { transform: translateX(100%) rotate(30deg); }
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #f00;
+            animation: confettiFall 5s linear infinite;
+        }
+        
+        @keyframes confettiFall {
+            0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Loading Page -->
+        <div id="loading-page">
+            <div class="loading-text">PRINTIGO PRINTING HOUSE LOADING</div>
+            <div class="loader">
+                <div class="loader-circle"></div>
+                <div class="loader-circle"></div>
+                <div class="loader-circle"></div>
+            </div>
+        </div>
+        
+        <!-- Privacy Policy Page -->
+        <div id="privacy-page">
+            <div class="privacy-content">
+                <h2>Privacy Policy</h2>
+                <p>Welcome to our platform! Before you proceed, please take a moment to review our privacy policy.</p>
+                
+                <p>We collect certain information to provide and improve our services. This may include:</p>
+                <ul>
+                    <li>Personal information you provide (name, email, etc.)</li>
+                    <li>Usage data and analytics</li>
+                    <li>Cookies and similar tracking technologies</li>
+                </ul>
+                
+                <p>Your data is used to:</p>
+                <ul>
+                    <li>Provide and maintain our service</li>
+                    <li>Notify you about changes</li>
+                    <li>Allow participation in interactive features</li>
+                    <li>Provide customer support</li>
+                    <li>Gather analysis to improve our service</li>
+                </ul>
+                
+                <p>We implement security measures to protect your data, but remember no method of transmission over the Internet is 100% secure.</p>
+                
+                <p>By continuing, you agree to our collection and use of information in accordance with this policy.</p>
+            </div>
+            
+            <div class="checkbox-container">
+                <input type="checkbox" id="agree-checkbox">
+                <label for="agree-checkbox">I have read and agree to the privacy policy</label>
+            </div>
+            
+            <button class="continue-btn" id="continue-btn" disabled>Continue</button>
+        </div>
+        
+        <!-- Login Page -->
+        <div id="login-page">
+            <h1 class="login-title">ENTER DETAILS!</h1>
+            
+            <div class="input-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" placeholder="Enter your username">
+            </div>
+            
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Enter your password">
+            </div>
+            
+            <div class="error-message" id="login-error"></div>
+            
+            <button class="login-btn" id="login-btn">PROCEED</button>
+        </div>
+        
+        <!-- Verification Page -->
+        <div id="verification-page">
+            <h1 class="verification-title">VERIFICATION PANNEL</h1>
+            <p class="verification-subtitle">Please select all images containing <strong>cats</strong> to verify you're human</p>
+            
+            <div class="verification-box">
+                <div class="verification-items">
+                    <div class="verification-item" data-correct="false">🐶</div>
+                    <div class="verification-item" data-correct="true">🐱</div>
+                    <div class="verification-item" data-correct="false">🐭</div>
+                    <div class="verification-item" data-correct="true">🐈</div>
+                    <div class="verification-item" data-correct="false">🐦</div>
+                    <div class="verification-item" data-correct="true">😺</div>
+                    <div class="verification-item" data-correct="false">🦊</div>
+                    <div class="verification-item" data-correct="false">🐻</div>
+                </div>
+            </div>
+            
+            <button class="verify-btn" id="verify-btn" disabled>Verify</button>
+        </div>
+        
+        <!-- Final Page -->
+        <div id="final-page">
+            <div class="particles" id="particles"></div>
+            <div class="final-content">
+                <h1 class="final-title">Congratulations!</h1>
+                <p class="final-text">You've successfully completed all verification steps. We're excited to have you on board!</p>
+                <p class="final-text">Click the button below to access your exclusive content and start your journey with us.</p>
+                <a href="link.html" class="final-link" id="final-link">Access Your Content Now</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Valid credentials (you can change these)
+        const validCredentials = {
+            username: "MALIKEDUCATION",
+            password: "MALIK@123"
+        };
+        
+        // Loading page timeout
+        setTimeout(() => {
+            document.getElementById('loading-page').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('loading-page').style.display = 'none';
+                showPrivacyPage();
+            }, 500);
+        }, 10000); // 10 seconds loading time
+        
+        // Privacy Page Logic
+        function showPrivacyPage() {
+            const privacyPage = document.getElementById('privacy-page');
+            privacyPage.style.display = 'block';
+            setTimeout(() => {
+                privacyPage.style.opacity = '1';
+                privacyPage.style.transform = 'scale(1)';
+            }, 10);
+            
+            // Checkbox event
+            document.getElementById('agree-checkbox').addEventListener('change', function() {
+                document.getElementById('continue-btn').disabled = !this.checked;
+            });
+            
+            // Continue button event
+            document.getElementById('continue-btn').addEventListener('click', function() {
+                privacyPage.style.opacity = '0';
+                privacyPage.style.transform = 'scale(0.9)';
+                setTimeout(() => {
+                    privacyPage.style.display = 'none';
+                    showLoginPage();
+                }, 500);
+            });
+        }
+        
+        // Login Page Logic
+        function showLoginPage() {
+            const loginPage = document.getElementById('login-page');
+            loginPage.style.display = 'block';
+            setTimeout(() => {
+                loginPage.style.opacity = '1';
+                loginPage.style.transform = 'scale(1)';
+            }, 10);
+            
+            // Login button event
+            document.getElementById('login-btn').addEventListener('click', function() {
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                const errorElement = document.getElementById('login-error');
+                
+                if (username === validCredentials.username && password === validCredentials.password) {
+                    errorElement.textContent = '';
+                    loginPage.style.opacity = '0';
+                    loginPage.style.transform = 'scale(0.9)';
+                    setTimeout(() => {
+                        loginPage.style.display = 'none';
+                        showVerificationPage();
+                    }, 500);
+                } else {
+                    errorElement.textContent = 'Invalid username or password';
+                    document.getElementById('password').value = '';
+                }
+            });
+        }
+        
+        // Verification Page Logic
+        function showVerificationPage() {
+            const verificationPage = document.getElementById('verification-page');
+            verificationPage.style.display = 'block';
+            setTimeout(() => {
+                verificationPage.style.opacity = '1';
+                verificationPage.style.transform = 'scale(1)';
+            }, 10);
+            
+            const verificationItems = document.querySelectorAll('.verification-item');
+            let selectedCount = 0;
+            let correctSelections = 0;
+            
+            verificationItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    if (this.classList.contains('selected')) {
+                        this.classList.remove('selected');
+                        selectedCount--;
+                        if (this.dataset.correct === 'true') correctSelections--;
+                    } else {
+                        this.classList.add('selected');
+                        selectedCount++;
+                        if (this.dataset.correct === 'true') correctSelections++;
+                    }
+                    
+                    // Enable verify button if at least one item is selected
+                    document.getElementById('verify-btn').disabled = selectedCount === 0;
+                });
+            });
+            
+            // Verify button event
+            document.getElementById('verify-btn').addEventListener('click', function() {
+                // Check if all correct items are selected and no incorrect items
+                const allCorrectSelected = correctSelections === 3; // There are 3 correct items
+                const noIncorrectSelected = selectedCount === correctSelections;
+                
+                if (allCorrectSelected && noIncorrectSelected) {
+                    verificationPage.style.opacity = '0';
+                    verificationPage.style.transform = 'scale(0.9)';
+                    setTimeout(() => {
+                        verificationPage.style.display = 'none';
+                        showFinalPage();
+                    }, 500);
+                } else {
+                    alert('Please select all and only the correct items (cats) to verify you are human.');
+                    // Reset selection
+                    verificationItems.forEach(item => item.classList.remove('selected'));
+                    selectedCount = 0;
+                    correctSelections = 0;
+                    document.getElementById('verify-btn').disabled = true;
+                }
+            });
+        }
+        
+        // Final Page Logic
+        function showFinalPage() {
+            const finalPage = document.getElementById('final-page');
+            finalPage.style.display = 'block';
+            
+            // Create animated particles
+            const particlesContainer = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                // Random size between 5 and 15px
+                const size = Math.random() * 10 + 5;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                
+                // Random position
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+                
+                // Random animation duration and delay
+                particle.style.animationDuration = `${Math.random() * 10 + 5}s`;
+                particle.style.animationDelay = `${Math.random() * 5}s`;
+                
+                particlesContainer.appendChild(particle);
+            }
+            
+            // Create confetti
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.classList.add('confetti');
+                
+                // Random color
+                const colors = ['#ff8a00', '#e52e71', '#00b4db', '#4CAF50', '#9C27B0'];
+                confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                
+                // Random size
+                const size = Math.random() * 10 + 5;
+                confetti.style.width = `${size}px`;
+                confetti.style.height = `${size}px`;
+                
+                // Random position
+                confetti.style.left = `${Math.random() * 100}%`;
+                
+                // Random animation duration and delay
+                confetti.style.animationDuration = `${Math.random() * 3 + 2}s`;
+                confetti.style.animationDelay = `${Math.random() * 2}s`;
+                
+                finalPage.appendChild(confetti);
+            }
+        }
+    </script>
+</body>
+</html>
