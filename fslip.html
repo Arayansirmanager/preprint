@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Courier Slip Generator</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .form-container { max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px; color: #333; }
+        .slip-layout { display: yes; }
+        h2, h3 { text-align: center; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; }
+        input[type="text"], input[type="tel"], input[type="date"] { width: 100%; padding: 8px; box-sizing: border-box; }
+        .button { width: 100%; padding: 10px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+        .next-button { margin-top: 20px; }
+		
+		.slip h4 {
+        text-align: right;
+		margin-left: px;
+		margin-top: 2px;
+        margin-bottom: 0px;
+        padding-bottom: 0px;
+		font-size: 10px;
+		}
+		
+		.slip h5 {
+        text-align: left;
+		margin-left: px;
+		margin-top: 2px;
+        margin-bottom: 0px;
+        padding-bottom: 0px;
+		font-size: 25px;
+		}
+		
+		.slip h6 {
+        text-align: center;
+		margin-left: px;
+		margin-top: 10px;
+        margin-bottom: 0px;
+        padding-bottom: 0px;
+		font-size: 10px;
+		}
+        
+        /* Styles for the A4 slip layout */
+        @media print {
+            .form-container { display: none; }
+            .slip-layout { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(2, 1fr); gap: 10px; }
+            .slip { border: 1px solid #333; padding: 10px; margin: 0; font-size: 12px; position: relative; }
+            .logo { width: 50px; height: 50px; position: absolute; top: 10px; right: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-container" id="formContainer">
+    <h2>Enter Courier Details</h2>
+    <form id="slipForm">
+        <div id="slipFormContent">
+            <!-- Dynamic form content will be inserted here -->
+        </div>
+        <button type="button" class="button next-button" onclick="collectSlipDetails()">submit</button>
+    </form>
+</div>
+
+<div class="slip-layout" id="slipLayout">
+    <!-- Dynamic slips will be inserted here -->
+</div>
+
+<script>
+    const totalSlips = 4; // Total number of slips
+    let currentSlip = 1; // Start with the first slip
+    const slipDetails = []; // Array to store all slip details
+
+    // Function to generate the form for the current slip
+    function generateSlipForm(slipNumber) {
+        const formContent = `
+            <h3>Slip ${slipNumber}</h3>
+            <div class="form-group">
+                <label for="customerName">Customer Name</label>
+                <input type="text" id="customerName" required>
+            </div>
+            <div class="form-group">
+                <label for="customerPhone">Phone Number</label>
+                <input type="tel" id="customerPhone" required>
+            </div>
+            <div class="form-group">
+                <label>Address Line 1</label>
+                <input type="text" id="addressLine1" required>
+            </div>
+            <div class="form-group">
+                <label>Address Line 2</label>
+                <input type="text" id="addressLine2">
+            </div>
+            <div class="form-group">
+                <label>District</label>
+                <input type="text" id="district" required>
+            </div>
+            <div class="form-group">
+                <label>State</label>
+                <select id="state">
+       <option value="">Select State From the below List To Select Click On Arrow In Right      -     --></option>
+     <option>Andhra Pradesh</option><option>Arunachal Pradesh</option><option>Assam</option>
+      <option>Bihar</option><option>Chhattisgarh</option><option>Goa</option>
+      <option>Gujarat</option><option>Haryana</option><option>Himachal Pradesh</option>
+      <option>Jharkhand</option><option>Jammu & Kashmir</option><option>Karnataka</option><option>Kerala</option>
+      <option>Madhya Pradesh</option><option>Maharashtra</option><option>Manipur</option>
+      <option>Meghalaya</option><option>Mizoram</option><option>Nagaland</option>
+      <option>Odisha</option><option>Punjab</option><option>Rajasthan</option>
+      <option>Sikkim</option><option>Tamil Nadu</option><option>Telangana</option>
+      <option>Tripura</option><option>Uttar Pradesh</option><option>Uttarakhand</option>
+      <option>West Bengal</option><option>Delhi</option><option>Puducherry</option>
+    </select>
+            </div>
+            <div class="form-group">
+                <label>PIN Code</label>
+                <input type="text" id="pinCode" required>
+            </div>
+            <div class="form-group">
+                <label>Date</label>
+                <input type="date" id="slipDate" required>
+            </div>
+        `;
+        document.getElementById("slipFormContent").innerHTML = formContent;
+    }
+
+    // Function to collect details of the current slip and move to the next
+    function collectSlipDetails() {
+        const name = document.getElementById("customerName").value;
+        const phone = document.getElementById("customerPhone").value;
+        const line1 = document.getElementById("addressLine1").value;
+        const line2 = document.getElementById("addressLine2").value || "";
+        const district = document.getElementById("district").value;
+        const state = document.getElementById("state").value;
+        const pin = document.getElementById("pinCode").value;
+        const date = document.getElementById("slipDate").value;
+
+        if (name && phone && line1 && district && state && pin && date) {
+            slipDetails.push({ name, phone, address: `${line1}, ${line2}`, district, state, pin, date });
+
+            if (currentSlip < totalSlips) {
+                currentSlip++;
+                generateSlipForm(currentSlip);
+            } else {
+                document.getElementById("formContainer").style.display = "none";
+                generateSlipLayout();
+            }
+        } else {
+            alert("Please fill all required fields.");
+        }
+    }
+
+    // Function to generate the slip layout for printing
+    function generateSlipLayout() {
+        const slipLayout = document.getElementById("slipLayout");
+        slipLayout.innerHTML = "";
+
+        slipDetails.forEach((details, index) => {
+            const slip = document.createElement("div");
+            slip.className = "slip";
+            slip.innerHTML = `
+                <p><h6><font size="05"><strong>RECIVER'S DETAILS:</font size></h6></strong>
+				<FONT SIZE="03"><strong>__________________________________________</FONT SIZE></strong>
+                <p><FONT SIZE="03"><strong>Customer Name:</FONT SIZE></strong> ${details.name}</p>
+                <p><FONT SIZE="03"><strong>Phone:</FONT SIZE></strong> ${details.phone}</p>
+                <p><FONT SIZE="03"><strong>Address:</FONT SIZE></strong> ${details.address}</p>
+				<P><FONT SIZE="03"><strong>State:</FONT SIZE></strong> ${details.state}</P>
+				<P><FONT SIZE="03"><strong>PIN:</FONT SIZE></strong> ${details.pin}</P>	
+                <FONT SIZE="03"><strong>__________________________________________</FONT SIZE></strong>
+				<p><h6><font size="05"><strong>FROM:</font size></h6></strong>
+                <FONT SIZE="03"><strong>__________________________________________</FONT SIZE></strong>				
+				<BR><FONT SIZE="04"><h5>MALIK EDUCATION SOLUTION</h5></FONT SIZE></p>
+				<p><strong>ADV.KHALIQ SIR</strong> 9266018030</p>
+				<p><strong>ADV.NIKHIL SIR</strong> 8743023792</p>
+				<p><FONT SIZE="03"><strong>Date:</FONT SIZE></strong> ${details.date}</p>
+				<p><h4><strong>Auth. sing..........................</strong></h4></p>
+            `;
+            slipLayout.appendChild(slip);
+        });
+
+        slipLayout.style.display = "grid";
+        window.print();
+        location.reload();
+    }
+
+    // Initialize the form for the first slip
+    generateSlipForm(currentSlip);
+</script>
+
+</body>
+</html>
